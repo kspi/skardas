@@ -10,7 +10,7 @@ class Instrument:
     def __init__(self, usbid):
         assert usbid
         self.instrument = usbtmc.Instrument(*usbid)
-        logger.info("Instrument init: {}".format(self.idn()))
+        self.name = self.idn()
         self.reset()
         self.wait()
 
@@ -25,12 +25,12 @@ class Instrument:
 
     def write(self, cmd, *args, **kwargs):
         line = cmd.format(*args, **kwargs)
-        logger.debug(line)
+        logger.debug("{}: {}".format(self.name, line))
         self.instrument.write(line)
 
     def ask(self, cmd, *args, **kwargs):
         line = cmd.format(*args, **kwargs)
-        logger.debug(line)
+        logger.debug("{}: {}".format(self.name, line))
         return self.instrument.ask(line)
 
 
@@ -189,14 +189,24 @@ class SignalGenerator(Instrument):
     # Siglent SDG1010
     usbid = (0xf4ed, 0xee3a)
 
-    def channel(channel=1, on=True, load=50):
+    def channel(self, channel=1, on=True, load=50):
         """Load is HZ (high-Z) or a number of Ohms."""
         self.write("C{}:OUTP {},LOAD,{}", on_off(on), load)
         self.wait()
 
-    def signal(channel=1, type="SINE", frequency=440, amplitude=2, offset=0, phase=0):
+    def signal(self, channel=1, type="SINE", frequency=440, amplitude=2, offset=0, phase=0):
         """Phase is in degrees, frequency in Hz, amplitude and offset in V.
 
         Type is one of SINE, SQUARE, RAMP, PULSE, NOISE, ARB, DC."""
 
         self.write("C{}:BSWV WVTP,{},FRQ,{},AMP,{},OFST,{},PHSE,{}", channel, type, frequency, amplitude, offset, phase)
+        self.wait()
+
+    def sweep(self, channel=1, time=1, start=220, stop=440):
+        self.write("C{}:SWWV STATE,ON,TIME,{}S,DIR,{},START,{},STOP,{},SOURCE,MAN,MTRIG",
+                channel, time, "UP" if start <= stop else "DOWN", start, stop)
+        self.wait()
+
+    def sync(self, channel=1, on=True):
+        self.write("C{}:SYNC {}", on_off(on))
+        self.wait()

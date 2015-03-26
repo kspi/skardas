@@ -1,2 +1,5 @@
 python-usbtmc
 pyusb
+matplotlib
+blist
+pytest
