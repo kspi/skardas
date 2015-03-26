@@ -56,7 +56,7 @@ class ResponsePlot:
 class Skardas:
     def __init__(self, root, start_freq, end_freq):
         self.root = root
-        self.root.title("{}-{} Hz - skardas", start_freq, end_freq)
+        self.root.title("{}-{} Hz - skardas".format(start_freq, end_freq))
 
         self.response = sampled_response.SampledResponse()
         self.start_freq = start_freq
@@ -101,6 +101,6 @@ if __name__ == "__main__":
     assert(len(sys.argv) == 3)
     root = tk.Tk()
     root.geometry("1000x700")
-    win = Response(root, float(sys.argv[1]), float(sys.argv[2]))
+    win = Skardas(root, float(sys.argv[1]), float(sys.argv[2]))
     win.start()
     tk.mainloop()

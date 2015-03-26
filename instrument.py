@@ -7,9 +7,9 @@ logger = logging.getLogger(__name__)
 class Instrument:
     usbid = None
 
-    def __init__(self, usbid):
-        assert usbid
-        self.instrument = usbtmc.Instrument(*usbid)
+    def __init__(self):
+        assert self.usbid
+        self.instrument = usbtmc.Instrument(*self.usbid)
         self.name = self.idn()
         self.reset()
         self.wait()
@@ -42,7 +42,8 @@ def on_off(x):
 
 
 class Scope(Instrument):
-    # Rigol DS1052E
+    """Rigol DS1052E"""
+
     usbid = (0x1ab1, 0x0588)
 
     def capture(self, channel=1):
@@ -186,7 +187,8 @@ class Scope(Instrument):
 
 
 class SignalGenerator(Instrument):
-    # Siglent SDG1010
+    """Siglent SDG1010"""
+
     usbid = (0xf4ed, 0xee3a)
 
     def channel(self, channel=1, on=True, load=50):

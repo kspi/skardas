@@ -12,7 +12,7 @@ Sample = namedtuple('Sample', FIELDS)
 
 class SampledResponse:
     def __init__(self):
-        self.data = sortedlist([], key=lambda x: x.frequency)
+        self.data = blist.sortedlist([], key=lambda x: x.frequency)
         self.scope = instrument.Scope()
         self.generator = instrument.SignalGenerator()
 
@@ -30,7 +30,7 @@ class SampledResponse:
         self.generator.signal(channel=2, frequency=frequency, amplitude=6)
         self.generator.signal(channel=1, frequency=frequency, amplitude=6)
         time.sleep(0.01)
-        while abs(1 - self.scope.measure_frequency(channel=2) / frequency) > 1e-3):
+        while abs(1 - self.scope.measure_frequency(channel=2) / frequency) > 1e-3:
             time.sleep(0.01)
         reference = self.scope.measure_vrms(channel=2)
         response = self.scope.measure_vrms(channel=1)
