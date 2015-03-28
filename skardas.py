@@ -52,12 +52,19 @@ class Skardas:
         self.label.pack(side=tk.RIGHT, fill=tk.BOTH, expand=1)
         self.save_button = tk.Button(self.toolbar, text="Save CSV", command=self.save_button_click)
         self.save_button.pack(side=tk.RIGHT)
+        self.stop_button = tk.Button(self.toolbar, text="Stop", command=self.stop)
+        self.stop_button.pack(side=tk.RIGHT)
 
     def save_button_click(self):
         f = filedialog.asksaveasfile(title="Save CSV", defaultextension='csv')
         if f:
             with f:
                 self.response.write_csv(f)
+
+    def stop(self):
+        self.response.release_instruments()
+        self.label.config(text="Sampling complete.")
+
 
     def sample(self):
         try:
@@ -67,11 +74,9 @@ class Skardas:
             self.plot.update()
             self.root.after(0, self.sample)
         except StopIteration:
-            self.label.config(text="Sampling complete.")
-            pass
+            self.stop()
 
     def start(self):
-        self.response.setup_instruments()
         self.sample()
 
 if __name__ == "__main__":

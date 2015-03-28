@@ -34,9 +34,10 @@ class SampledResponse:
 
         self.scope.trigger(source='EXT', level=0.1)
         self.scope.measure_total()
-        time.sleep(1)
 
-        self.sampling_rate = self.scope.get_sampling_rate()
+
+    def release_instruments(self):
+        # TODO: implement
 
 
     def sample(self, frequency):

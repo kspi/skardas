@@ -13,6 +13,9 @@ class Instrument:
         self.instrument = usbtmc.Instrument(*self.usbid)
         self.name = self.idn()
 
+    def unlock(self):
+        self.instrument.unlock()
+
     def idn(self):
         return self.ask("*IDN?")
 
