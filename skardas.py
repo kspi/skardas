@@ -1,43 +1,21 @@
 #!/usr/bin/env python3
-import matplotlib
-matplotlib.use('TkAgg')
-
-from numpy import arange, sin, pi, log10
-from numpy.random import random_sample
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
-from matplotlib.figure import Figure
-
-from matplotlib.pyplot import style
-style.use('ggplot')
-
 import sys
-if sys.version_info[0] < 3:
-    import Tkinter as tk
-    import tkFileDialog as filedialog
-else:
-    import tkinter as tk
-    from tkinter import filedialog
-
-from bisection_sequence import bisection_sequence
+import math
+import tkinter as tk
+from tkinter import filedialog
 import itertools
 
+from bisection_sequence import bisection_sequence
 import sampled_response
+import tkplot
 
-class ResponsePlot:
+class ResponsePlot(tkplot.TkPlot):
     def __init__(self, root, response, freqlim):
+        tkplot.TkPlot.__init__(self, root, (9, 6))
         self.response = response
         self.freqlim = freqlim
 
-        self.figure = Figure(figsize=(9, 6))
         self.plot = self.figure.add_subplot(111)
-
-        self.canvas = FigureCanvasTkAgg(self.figure, master=root)
-        self.canvas.show()
-        self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
-
-        self.toolbar = NavigationToolbar2TkAgg(self.canvas, root)
-        self.toolbar.update()
-
         self.plot.set_xscale('log')
         self.plot.set_xlabel("Frequency (Hz)")
         self.plot.set_ylabel("Response (dB)")
@@ -65,9 +43,8 @@ class Skardas:
 
         self.bisector = itertools.chain([0, 1], bisection_sequence(7))
 
-        self.plot_frame = tk.Frame(self.root)
-        self.plot_frame.pack(fill=tk.BOTH, expand=1)
-        self.plot = ResponsePlot(self.plot_frame, self.response, (self.start_freq, self.end_freq))
+        self.plot = ResponsePlot(self.root, self.response, (self.start_freq, self.end_freq))
+        self.plot.pack(fill=tk.BOTH, expand=1)
 
         self.toolbar = tk.Frame(self.root)
         self.toolbar.pack(fill=tk.X)
@@ -84,7 +61,7 @@ class Skardas:
 
     def sample(self):
         try:
-            frequency = 10**((log10(self.end_freq) - log10(self.start_freq)) * next(self.bisector) + log10(self.start_freq))
+            frequency = 10**((math.log10(self.end_freq) - math.log10(self.start_freq)) * next(self.bisector) + math.log10(self.start_freq))
             self.label.config(text="Sampling response at {} Hz".format(frequency))
             self.response.sample(frequency)
             self.plot.update()
