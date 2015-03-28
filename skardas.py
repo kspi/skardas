@@ -44,12 +44,12 @@ class ResponsePlot:
         self.plot.set_xlim(*self.freqlim)
         self.plot.yaxis.set_ticks([-20, -12, -9, -6, -3, -1, 0])
         self.plot.set_ylim(-24, 0.5)
-        self.line, = self.plot.plot(self.response.frequencies(), self.response.responses(), marker='.')
+        self.line, = self.plot.plot(self.response.frequencies(), self.response.dbs(), marker='.')
         self.figure.tight_layout()
 
     def update(self):
         self.line.set_xdata(self.response.frequencies())
-        self.line.set_ydata(self.response.responses())
+        self.line.set_ydata(self.response.dbs())
         self.figure.canvas.draw()
 
 

@@ -3,9 +3,10 @@ import blist
 from collections import namedtuple
 import instrument
 import time
+import math
 
 def decibels(x):
-    return 20 * log10(x)
+    return 20 * math.log10(x)
 
 FIELDS = ['frequency', 'reference', 'response', 'phase', 'db']
 Sample = namedtuple('Sample', FIELDS)
@@ -18,29 +19,43 @@ class SampledResponse:
 
     def setup_instruments(self):
         self.scope.reset()
-        self.scope.trigger(source='EXT', level=1)
-        self.scope.measure_total()
-        self.scope.wait()
-        self.sampling_rate = self.scope.get_sampling_rate()
         self.generator.reset()
+        time.sleep(0.5)
+
+        self.generator.signal(channel=1, frequency=440, amplitude=3)
+        time.sleep(0.5)
+        self.generator.channel(channel=1, on=True)
+        time.sleep(0.5)
         self.generator.sync(channel=1)
-        self.generator.wait()
+        time.sleep(0.5)
+
+        self.scope.auto()
+        time.sleep(6)
+
+        self.scope.trigger(source='EXT', level=0.1)
+        self.scope.measure_total()
+        time.sleep(1)
+
+        self.sampling_rate = self.scope.get_sampling_rate()
+
 
     def sample(self, frequency):
-        self.generator.signal(channel=2, frequency=frequency, amplitude=6)
-        self.generator.signal(channel=1, frequency=frequency, amplitude=6)
-        time.sleep(0.01)
-        while abs(1 - self.scope.measure_frequency(channel=2) / frequency) > 1e-3:
-            time.sleep(0.01)
-        reference = self.scope.measure_vrms(channel=2)
-        response = self.scope.measure_vrms(channel=1)
+        self.generator.signal(channel=1, frequency=frequency, amplitude=1)
+        time.sleep(0.5)
+
+        reference = 2 #Vpp
+        response = self.scope.measure_vpp(channel=1)
 
         ### TODO: phase calculation and display
         #data = numpy.fromarray(self.scope.capture(channel=1), 'B')
         #phase = determine_phase.sin_phase(data, frequency / self.sampling_rate)
+        phase = 0
         
         db = decibels(response / reference)
-        self.data.add(Sample(frequency, reference, response, phase, db))
+        s = Sample(frequency, reference, response, phase, db)
+        print(s)
+        self.data.add(s)
+        return s
 
     def frequencies(self):
         return [x.frequency for x in self.data]
