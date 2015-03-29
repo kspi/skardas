@@ -38,6 +38,7 @@ class SampledResponse:
 
     def release_instruments(self):
         # TODO: implement
+        pass
 
 
     def sample(self, frequency):
