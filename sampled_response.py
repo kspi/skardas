@@ -22,7 +22,7 @@ class SampledResponse:
         self.generator.reset()
         time.sleep(0.5)
 
-        self.generator.signal(channel=1, frequency=440, amplitude=3)
+        self.generator.signal(channel=1, frequency=100, amplitude=3)
         time.sleep(0.5)
         self.generator.channel(channel=1, on=True)
         time.sleep(0.5)
@@ -46,6 +46,14 @@ class SampledResponse:
         time.sleep(0.5)
 
         reference = 2 #Vpp
+        hscale='%2.8f' % ((frequency*2)**-1)
+        self.scope.hscale(scale=hscale)
+        time.sleep(0.5) #TODO: increase processing time at low frequencies  
+        #~ rscale=self.scope.get_hscale()   #debug
+        #~ print(hscale, rscale)            #debug
+        #~ time.sleep(0.5)                  #debug
+        self.scope.force_trigger()
+        time.sleep(0.5)
         response = self.scope.measure_vpp(channel=1)
 
         ### TODO: phase calculation and display

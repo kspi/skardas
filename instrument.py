@@ -57,6 +57,13 @@ class Scope(Instrument):
 
     def auto(self):
         self.write(":AUTO")
+        
+    def force_trigger(self):
+        self.write(":FORCetrig")
+        
+    def local(self):
+        self.write(":KEY:FORCe")
+        
 
     def get_sampling_rate(self, channel=1):
         assert(channel in [1, 2])
@@ -79,7 +86,7 @@ class Scope(Instrument):
         self.write(":ACQ:AVER {}", averages)
         self.write(":ACQ:MEMD {}", memdepth)
 
-    def timebase(self, mode="MAIN", format="XY", offset=0, scale=1):
+    def timebase(self, mode="MAIN", format="XT", offset=0, scale=1):
         """
         Configure timebase.
 
@@ -104,6 +111,12 @@ class Scope(Instrument):
         self.write(":TIM:FORM {}", format)
         self.write(":TIM{}:OFFS {}", tbcmd, offset)
         self.write(":TIM{}:SCAL {}", tbcmd, scale)
+        
+    def hscale(self, scale=1):
+        """
+        Change horizontal scale
+        """
+        self.write(":TIM:SCAL {}", scale)
 
     def trigger(self, mode="EDGE", source="CHAN1", level=0, sweep="NORMAL"):
         """
@@ -178,7 +191,9 @@ class Scope(Instrument):
     def measure_frequency(self, channel=1):
         assert(channel in [1, 2])
         return float(self.ask(":MEAS:FREQ?"))
-
+        
+    def get_hscale(self):
+        return float(self.ask(":TIMebase:SCALe?"))
 
 class SignalGenerator(Instrument):
     """Siglent SDG1010"""
