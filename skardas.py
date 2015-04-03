@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 import sys
-import math
 import tkinter as tk
 from tkinter import filedialog
 
 from bisection_sequence import frequency_bisection_sequence
 import sampled_response
 import tkplot
+
 
 class ResponsePlot(tkplot.TkPlot):
     def __init__(self, root, response, freqlim):

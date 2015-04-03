@@ -2,6 +2,7 @@ import numpy
 import numpy.linalg
 import math
 
+
 def sin_fit(xs, frequency):
     ts = numpy.arange(len(xs))
     ws = 2 * numpy.pi * frequency * ts
@@ -12,6 +13,7 @@ def sin_fit(xs, frequency):
     ]).T
     c, s, intercept = numpy.linalg.lstsq(a, xs)[0]
     return (c, s, intercept)
+
 
 def sin_phase(xs, frequency):
     c, s, intercept = sin_fit(xs, frequency)

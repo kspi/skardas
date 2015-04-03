@@ -5,11 +5,14 @@ import instrument
 import time
 import math
 
+
 def decibels(x):
     return 20 * math.log10(x)
 
+
 FIELDS = ['frequency', 'reference', 'response', 'phase', 'db']
 Sample = namedtuple('Sample', FIELDS)
+
 
 class SampledResponse:
     INITIAL_SCALE = 2
@@ -44,16 +47,16 @@ class SampledResponse:
         time.sleep(0.1)
 
     def adjust_time_scale(self, frequency):
-        scale = self.scope.timebase_scale * 6 # seconds/screen
+        scale = self.scope.timebase_scale * 6  # seconds/screen
         freq_top = 1 / scale * 0.5
         freq_bottom = freq_top * 1e-3
-        if not (freq_bottm < frequency < freq_top):
+        if not (freq_bottom < frequency < freq_top):
             self.scope.timebase_scale = 1 / freq_top / 6
 
     def response_rms(self):
         vpp = self.scope.measure_vpp(channel=1)
         set_scale = False
-        while r > 1e6: # an abnormally large value means out of bounds
+        while vpp > 1e6:  # an abnormally large value means out of bounds
             self.scope.chan1_scale *= 2
             set_scale = True
             time.sleep(0.1)
@@ -68,18 +71,18 @@ class SampledResponse:
         time.sleep(0.5)
 
         self.adjust_scale(frequency)
-        time.sleep(0.5) # TODO: increase processing time at low frequencies
+        time.sleep(0.5)  # TODO: increase processing time at low frequencies
         self.scope.force_trigger()
         time.sleep(0.1)
 
-        reference = math.sqrt(2) / 2 #Vrms
+        reference = math.sqrt(2) / 2  # Vrms
         response = self.response_rms()
 
-        ### TODO: phase calculation and display
-        #data = numpy.fromarray(self.scope.capture(channel=1), 'B')
-        #phase = determine_phase.sin_phase(data, frequency / self.sampling_rate)
+        # TODO: phase calculation and display
+        # data = numpy.fromarray(self.scope.capture(channel=1), 'B')
+        # phase = determine_phase.sin_phase(data, frequency / self.sampling_rate)
         phase = 0
-        
+
         db = decibels(response / reference)
         s = Sample(frequency, reference, response, phase, db)
         print(s)

@@ -1,14 +1,16 @@
 import matplotlib
-matplotlib.use('TkAgg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
 import tkinter as tk
+
+matplotlib.use('TkAgg')
 
 try:
     from matplotlib.pyplot import style
     style.use('ggplot')
 except ImportError:
     pass
+
 
 class TkPlot(tk.Frame):
     def __init__(self, master, figsize=(9, 6)):

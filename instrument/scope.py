@@ -1,5 +1,6 @@
 from .instrument import Instrument
 
+
 def scope_property_enum(command, choices, returned_choices=None, type=str):
     to_choice = dict(zip(returned_choices or choices, choices))
 
@@ -17,6 +18,7 @@ def scope_property_enum(command, choices, returned_choices=None, type=str):
 
     return property(fget, fset, doc=doc)
 
+
 def scope_property_bool(command):
     def fget(self):
         return self.ask("{}?", command) == "ON"
@@ -30,6 +32,7 @@ def scope_property_bool(command):
 
     return property(fget, fset, doc=doc)
 
+
 def scope_property_number(command, units):
     def fget(self):
         return float(self.ask("{}?", command))
@@ -42,6 +45,7 @@ def scope_property_number(command, units):
     """.format(command=command, units=units)
 
     return property(fget, fset, doc=doc)
+
 
 class Scope(Instrument):
     """Rigol DS1052E"""
@@ -60,10 +64,10 @@ class Scope(Instrument):
 
     def auto(self):
         self.write(":AUTO")
-        
+
     def force_trigger(self):
         self.write(":FORCetrig")
-        
+
     def local(self):
         self.write(":KEY:FORCe")
 
@@ -136,4 +140,3 @@ class Scope(Instrument):
     def measure_frequency(self, channel=1):
         assert(channel in [1, 2])
         return float(self.ask(":MEAS:FREQ?"))
-        

@@ -3,6 +3,7 @@ import numpy
 import numpy.random
 import math
 
+
 def test_sin_fit():
     numpy.random.seed(1)
 
@@ -28,17 +29,21 @@ def test_sin_fit():
                         assert(abs(s - s_) < 10 * sigma)
                         assert(abs(intercept - intercept_) < 10 * sigma)
 
+
 def angle_mod(x, m):
     return math.fmod(math.fmod(x, m) + m, m)
 
+
 def angle_difference(x, y):
     return angle_mod(x - y + math.pi, 2 * math.pi) - math.pi
+
 
 def test_angle_difference():
     assert(angle_difference(0, 1) == -1)
     assert(angle_difference(-1, 0) == -1)
     assert(angle_difference(1, 0) == 1)
     assert(angle_difference(0, -1) == 1)
+
 
 def test_sin_phase():
     numpy.random.seed(1)
