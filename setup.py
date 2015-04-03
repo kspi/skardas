@@ -38,7 +38,7 @@ setup(
     license="GPL3",
     packages=['skardas'],
     scripts=["bin/skardas"],
-    
+
     install_requires=[
         "python-usbtmc",
         "pyusb",

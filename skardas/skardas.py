@@ -28,7 +28,7 @@ class ResponsePlot(tkplot.TkPlot):
         self.figure.canvas.draw()
 
 
-def execute_delayed(generator):
+def execute_delayed(root, generator):
     """For each yielded value wait the given amount of time (in seconds)
     without pausing the Tkinter main loop.
 
@@ -75,7 +75,8 @@ class Skardas:
             self.plot.update()
 
     def start(self):
-        execute_delayed(self.sample())
+        execute_delayed(self.root, self.sample())
+
 
 def run(start_freq, end_freq):
     root = tk.Tk()
