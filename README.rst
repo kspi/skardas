@@ -41,16 +41,13 @@ code passes the tests and flake8_'s checks. The tests can be executed using::
 TODO
 ----
 
-In general order of importance.
-
 - Test recent changes (new API, adaptive scales, responsive UI).
-
-- Be more robust in case of resonant tank circuit (measure response
-  frequency?)
 
 - Multiple plot interface.
 
   * Phase measurement.
   * Distortion measurement.
+
+- Perform Fourier transform of response for more robustness.
 
 - Upload to PyPI.
