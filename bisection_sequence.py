@@ -1,4 +1,5 @@
 import numpy
+import math
 
 def bisection_triangle_row(n, previous):
     if n == 0:
@@ -8,11 +9,18 @@ def bisection_triangle_row(n, previous):
             yield x - 2**(-n - 1)
             yield x + 2**(-n - 1)
 
-def bisection_sequence(max_depth=numpy.inf):
+def bisection_sequence(depth=numpy.inf):
     n = 0
     row = []
-    while n < max_depth:
+    while n < depth:
         row = list(bisection_triangle_row(n, row))
-        for x in row:
-            yield x
+        yield from row
         n += 1
+
+def frequency_bisection_sequence(start, end, depth=numpy.inf):
+    logstart = math.log(start)
+    logend = math.log(end)
+    yield start
+    yield end
+    for x in bisection_sequence(depth):
+        yield math.exp((logend - logstart) * x + logstart)

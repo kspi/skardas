@@ -3,9 +3,8 @@ import sys
 import math
 import tkinter as tk
 from tkinter import filedialog
-import itertools
 
-from bisection_sequence import bisection_sequence
+from bisection_sequence import frequency_bisection_sequence
 import sampled_response
 import tkplot
 
@@ -41,7 +40,7 @@ class Skardas:
         self.end_freq = end_freq
         self.frequency = self.start_freq
 
-        self.bisector = itertools.chain([0, 1], bisection_sequence(7))
+        self.frequency_sequence = frequency_bisection_sequence(start_freq, end_freq, depth=7)
 
         self.plot = ResponsePlot(self.root, self.response, (self.start_freq, self.end_freq))
         self.plot.pack(fill=tk.BOTH, expand=1)
@@ -65,10 +64,9 @@ class Skardas:
         self.response.release_instruments()
         self.label.config(text="Sampling complete.")
 
-
     def sample(self):
         try:
-            frequency = 10**((math.log10(self.end_freq) - math.log10(self.start_freq)) * next(self.bisector) + math.log10(self.start_freq))
+            frequency = next(self.frequency_sequence)
             self.label.config(text="Sampling response at {} Hz".format(frequency))
             self.response.sample(frequency)
             self.plot.update()
