@@ -1,11 +1,9 @@
-#!/usr/bin/env python3
-import sys
 import tkinter as tk
 from tkinter import filedialog
 
-from bisection_sequence import frequency_bisection_sequence
-import sampled_response
-import tkplot
+from .bisection_sequence import frequency_bisection_sequence
+from . import sampled_response
+from . import tkplot
 
 
 class ResponsePlot(tkplot.TkPlot):
@@ -79,10 +77,9 @@ class Skardas:
     def start(self):
         execute_delayed(self.sample())
 
-if __name__ == "__main__":
-    assert(len(sys.argv) == 3)
+def run(start_freq, end_freq):
     root = tk.Tk()
     root.geometry("1000x700")
-    win = Skardas(root, float(sys.argv[1]), float(sys.argv[2]))
+    win = Skardas(root, start_freq, end_freq)
     win.start()
     tk.mainloop()

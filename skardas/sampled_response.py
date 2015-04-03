@@ -1,8 +1,8 @@
 import csv
 import blist
 from collections import namedtuple
-import instrument
 import math
+from . import instrument
 
 
 def decibels(x):

@@ -1,4 +1,4 @@
-import determine_phase
+from skardas import determine_phase
 import numpy
 import numpy.random
 import math

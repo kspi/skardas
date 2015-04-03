@@ -1,4 +1,4 @@
-import bisection_sequence
+from skardas import bisection_sequence
 
 
 def test_frequency_bisection_sequence():
