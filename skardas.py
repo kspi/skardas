@@ -30,6 +30,15 @@ class ResponsePlot(tkplot.TkPlot):
         self.figure.canvas.draw()
 
 
+def execute_delayed(generator):
+    """For each yielded value wait the given amount of time (in seconds)
+    without pausing the Tkinter main loop.
+
+    See 'slowmotion' in http://effbot.org/zone/tkinter-generator-polyline.htm
+    """
+    root.after(generator.next() * 1000, execute_delayed, generator)
+
+
 class Skardas:
     def __init__(self, root, start_freq, end_freq):
         self.root = root
@@ -38,9 +47,6 @@ class Skardas:
         self.response = sampled_response.SampledResponse()
         self.start_freq = start_freq
         self.end_freq = end_freq
-        self.frequency = self.start_freq
-
-        self.frequency_sequence = frequency_bisection_sequence(start_freq, end_freq, depth=7)
 
         self.plot = ResponsePlot(self.root, self.response, (self.start_freq, self.end_freq))
         self.plot.pack(fill=tk.BOTH, expand=1)
@@ -65,18 +71,13 @@ class Skardas:
         self.label.config(text="Sampling complete.")
 
     def sample(self):
-        try:
-            frequency = next(self.frequency_sequence)
+        for frequency in frequency_bisection_sequence(self.start_freq, self.end_freq, depth=7):
             self.label.config(text="Sampling response at {} Hz".format(frequency))
-            self.response.sample(frequency)
+            yield from self.response.sample(frequency)
             self.plot.update()
-            self.root.after(0, self.sample)
-        except StopIteration:
-            self.stop()
 
     def start(self):
-        self.response.setup_instruments()
-        self.sample()
+        execute_delayed(self.sample())
 
 if __name__ == "__main__":
     assert(len(sys.argv) == 3)

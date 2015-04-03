@@ -2,7 +2,6 @@ import csv
 import blist
 from collections import namedtuple
 import instrument
-import time
 import math
 
 
@@ -29,12 +28,12 @@ class SampledResponse:
     def setup_instruments(self):
         self.scope.reset()
         self.generator.reset()
-        time.sleep(0.5)
+        yield 0.5
 
         self.generator.channel(channel=1, on=True)
-        time.sleep(0.2)
+        yield 0.2
         self.generator.sync(channel=1)
-        time.sleep(0.2)
+        yield 0.2
 
         self.scope.chan1_display = True
         self.scope.chan1_offset = 0
@@ -44,7 +43,7 @@ class SampledResponse:
         self.scope.trigger_edge_source = "EXT"
         self.scope.trigger_level = 0.1
         self.scope.measure_total()
-        time.sleep(0.1)
+        yield 0.1
 
     def adjust_time_scale(self, frequency):
         scale = self.scope.timebase_scale * 6  # seconds/screen
@@ -59,7 +58,7 @@ class SampledResponse:
         while vpp > 1e6:  # an abnormally large value means out of bounds
             self.scope.chan1_scale *= 2
             set_scale = True
-            time.sleep(0.1)
+            yield 0.1
             vpp = self.scope.measure_vpp(channel=1)
         vrms = self.scope.measure_vrms(channel=1)
         if set_scale:
@@ -68,15 +67,15 @@ class SampledResponse:
 
     def sample(self, frequency):
         self.generator.signal(channel=1, frequency=frequency, amplitude=1)
-        time.sleep(0.5)
+        yield 0.5
 
-        self.adjust_scale(frequency)
-        time.sleep(0.5)  # TODO: increase processing time at low frequencies
+        yield from self.adjust_time_scale(frequency)
+        yield 0.5  # TODO: increase processing time at low frequencies
         self.scope.force_trigger()
-        time.sleep(0.1)
+        yield 0.1
 
         reference = math.sqrt(2) / 2  # Vrms
-        response = self.response_rms()
+        response = (yield from self.response_rms())
 
         # TODO: phase calculation and display
         # data = numpy.fromarray(self.scope.capture(channel=1), 'B')
