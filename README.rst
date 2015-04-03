@@ -13,9 +13,9 @@ for measuring the response.
 Installation and usage
 ----------------------
 
-The program requires *setuptools* for installation. You can install it by
-running ``./setup.py install`` (which may require root) or with *pip*. The
-dependencies should be installed automatically from PyPI.
+The program supports Python 3 and requires *setuptools* for installation. You
+can install it by running ``./setup.py install`` (which may require root) or
+with *pip*. The dependencies should be installed automatically from PyPI.
 
 The signal generator's channel 1 should be connected to the filter's input and
 the filter's output should be connected to the scope's channel 1. The signal
