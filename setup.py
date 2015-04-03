@@ -22,16 +22,23 @@ class PyTest(TestCommand):
         sys.exit(errno)
 
 
+def readme():
+    with open("README.rst", "r") as f:
+        return f.read()
+
+
 setup(
     name="skardas",
     version="0.1",
     description="Measure frequency response with a sweep.",
+    long_description=readme(),
     author="Kiprianas Spiridonovas",
     author_email="k.spiridonovas@gmail.com",
     url="https://github.com/kspi/skardas",
     license="GPL3",
     packages=['skardas'],
     scripts=["bin/skardas"],
+    
     install_requires=[
         "python-usbtmc",
         "pyusb",
@@ -43,9 +50,4 @@ setup(
         "pytest",
     ],
     cmdclass={'test': PyTest},
-
-    long_description="""
-    Uses the Siglent SDG10x0 function generator together with the Rigol DS1052E
-    scope to analyse the frequency response of networks.
-    """,
 )
