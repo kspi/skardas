@@ -13,8 +13,8 @@ for measuring the response.
 Installation and usage
 ----------------------
 
-The program requires `setuptools` for installation. You can install it by
-running `./setup.py install` (which may require root) or with `pip`. The
+The program requires *setuptools* for installation. You can install it by
+running ``./setup.py install`` (which may require root) or with *pip*. The
 dependencies should be installed automatically from PyPI.
 
 The signal generator's channel 1 should be connected to the filter's input and
@@ -25,6 +25,17 @@ external trigger input. Then you can run the analysis with::
     skardas start_frequency end_frequency
 
 (substituting the appropriate frequency numbers in Hz)
+
+
+Contributing
+------------
+
+Suggestions and patches are welcome. Before submitting patches, check that the
+code passes the tests and flake8_'s checks. The tests can be executed using::
+
+    ./setup.py test
+
+.. _flake8: https://pypi.python.org/pypi/flake8
 
 
 TODO
