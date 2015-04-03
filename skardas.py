@@ -75,6 +75,7 @@ class Skardas:
             self.stop()
 
     def start(self):
+        self.response.setup_instruments()
         self.sample()
 
 if __name__ == "__main__":
