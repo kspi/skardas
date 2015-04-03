@@ -37,8 +37,8 @@ class SampledResponse:
 
 
     def release_instruments(self):
-        # TODO: implement
-        pass
+        del self.scope
+        del self.generator
 
 
     def sample(self, frequency):
