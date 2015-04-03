@@ -34,11 +34,50 @@ class Instrument:
 
 
 def on_off(x):
-    if x:
-        return "ON"
-    else:
-        return "OFF"
+    return "ON" if x else "OFF"
 
+def scope_property_enum(command, choices, returned_choices=None, type=str):
+    to_choice = dict(zip(returned_choices or choices, choices))
+
+    def fget(self):
+        return type(self.ask("{}?", command))
+
+    def fset(self, value):
+        self.write("{} {}", command, to_choice[type(value)])
+
+    doc = """
+    The enum property {command}.
+
+    Possible values are: {choices_str}
+    """.format(command=command, choices_str=", ".join(str(k) for k in to_choice.keys()))
+
+    return property(fget, fset, doc=doc)
+
+def scope_property_bool(command):
+    def fget(self):
+        return self.ask("{}?", command) == "ON"
+
+    def fset(self, value):
+        self.write("{} {}", command, "ON" if value else "OFF")
+
+    doc = """
+    The boolean property {command}.
+    """.format(command=command)
+
+    return property(fget, fset, doc=doc)
+
+def scope_property_number(command, units):
+    def fget(self):
+        return float(self.ask("{}?", command))
+
+    def fset(self, value):
+        self.write("{} {:.12}", command, float(value))
+
+    doc = """
+    The numeric {command} property. The value is in {units}.
+    """.format(command=command, units=units)
+
+    return property(fget, fset, doc=doc)
 
 class Scope(Instrument):
     """Rigol DS1052E"""
@@ -63,110 +102,52 @@ class Scope(Instrument):
         
     def local(self):
         self.write(":KEY:FORCe")
-        
 
-    def get_sampling_rate(self, channel=1):
-        assert(channel in [1, 2])
-        return float(self.ask(":ACQ:SAMP? CHAN{}", channel))
+    acquire_type = scope_property_enum(":ACQ:TYPE", ["NORM", "AVER", "PEAK"], ["NORMAL", "AVERAGE", "PEAKDETECT"])
+    acquire_mode = scope_property_enum(":ACQ:MODE", ["RTIM", "ETIM"], ["REAL_TIME", "EQUAL_TIME"])
+    acquire_averages = scope_property_enum(":ACQ:AVER", [2**x for x in range(1, 9)], type=int)
+    acquire_memdepth = scope_property_enum(":ACQ:MEMD", ["LONG", "NORM"], ["LONG", "NORMAL"])
 
-    def acquire(self, type="NORM", mode="RTIM", averages=16, memdepth="LONG"):
-        """
-        Configure acquisition.
-        <type> could be NORMal, AVERage or PEAKdetect.
-        <mode> could be RTIMe (Real time Sampling) or ETIMe (Equivalent Sampling).
-        <averages> could be and integer of 2 times the power of N within 2 and 256.
-        <depth> could be LONG (long memory) or NORMal (normal memory).
-        """
-        assert(type in ["NORM", "AVER", "PEAK"])
-        assert(mode in ["RTIM", "ETIM"])
-        assert(averages in [2**x for x in range(1, 9)])
-        assert(depth in ["LONG", "NORM"])
-        self.write(":ACQ:TYPE {}", type)
-        self.write(":ACQ:MODE {}", mode)
-        self.write(":ACQ:AVER {}", averages)
-        self.write(":ACQ:MEMD {}", memdepth)
+    timebase_mode = scope_property_enum(":TIM:MODE", ["MAIN", "DEL"], ["MAIN", "DELAYED"])
+    timebase_format = scope_property_enum(":TIM:FORM", ["XY", "YT", "SCAN"], ["X-Y", "Y-T", "SCANNING"])
+    timebase_scale = scope_property_number(":TIM:SCAL", units="seconds/division")
+    timebase_offset = scope_property_number(":TIM:OFFS", units="seconds")
+    timebase_delayed_format = scope_property_enum(":TIM:DEL:FORM", ["XY", "YT", "SCAN"], ["X-Y", "Y-T", "SCANNING"])
+    timebase_delayed_scale = scope_property_number(":TIM:DEL:SCAL", units="seconds/division")
+    timebase_delayed_offset = scope_property_number(":TIM:DEL:OFFS", units="seconds")
 
-    def timebase(self, mode="MAIN", format="XT", offset=0, scale=1):
-        """
-        Configure timebase.
+    trigger_mode = scope_property_enum(":TRIG:MODE",
+            ["EDGE", "PULS", "VIDEO", "SLOP", "PATT", "DUR", "ALT"],
+            ["EDGE", "PULSE", "VIDEO", "SLOPE", "PATTERN", "DURATION", "ALTERNATION"])
+    trigger_edge_source = scope_property_enum(":TRIG:EDGE:SOUR",
+            ["CHAN1", "CHAN2", "EXT", "AC"],
+            ["CH1", "CH2", "EXT", "ACLINE"])
+    trigger_edge_level = scope_property_number(":TRIG:EDGE:LEV", "V")
+    trigger_edge_sweep = scope_property_enum(":TRIG:EDGE:SWE",
+            ["AUTO", "NORM", "SING"],
+            ["AUTO", "NORMAL", "SINGLE"])
+    trigger_edge_coupling = scope_property_enum(":TRIG:EDGE:COUP",
+            ["DC", "AC", "HF", "LF"])
 
-        <mode> could be MAIN (main timebase) or DELayed (delayed scan).
+    chan1_bwlimit = scope_property_bool("CHAN1:BWL")
+    chan1_display = scope_property_bool("CHAN1:DISP")
+    chan1_invert = scope_property_bool("CHAN1:INV")
+    chan1_filter = scope_property_bool("CHAN1:FILT")
+    chan1_coupling = scope_property_enum("CHAN1:COUP", ["DC", "AC", "GND"])
+    chan1_offset = scope_property_number("CHAN1:OFFS", "V")
+    chan1_scale = scope_property_number("CHAN1:SCAL", "V")
+    chan1_probe = scope_property_enum("CHAN1:PROB", [1, 5, 10, 50, 100, 500, 1000], type=int)
 
-        <format> could be XY, YT or SCANning.
+    chan2_bwlimit = scope_property_bool("CHAN2:BWL")
+    chan2_display = scope_property_bool("CHAN2:DISP")
+    chan2_invert = scope_property_bool("CHAN2:INV")
+    chan2_filter = scope_property_bool("CHAN2:FILT")
+    chan2_coupling = scope_property_enum("CHAN2:COUP", ["DC", "AC", "GND"])
+    chan2_offset = scope_property_number("CHAN2:OFFS", "V")
+    chan2_scale = scope_property_number("CHAN2:SCAL", "V")
+    chan2_probe = scope_property_enum("CHAN2:PROB", [1, 5, 10, 50, 100, 500, 1000], type=int)
 
-        Offset of the waveform position relative to the trigger midpoint.). Thereinto,
-        In NORMAL mode, the range of <scale_val> is 1s ~ end of the memory;
-        In STOP mode, the range of <scale_val> is -500s ~ +500s;
-        In SCAN mode, the range of <scale_val> is -6*Scale ~ +6*Scale; (Note: Scale
-        indicates the current horizontal scale, the unit is s/div.)
-
-        For scale, the unit is s/div (seconds/grid):
-        In YT mode, the range of <scale_val> is 2ns - 50s;
-        In ROLL mode, the range of <scale_val> is 500ms - 50s;
-        """
-        assert(mode in ["MAIN", "DEL"])
-        assert(format in ["XY", "YT", "SCAN"])
-        tbcmd = "" if mode == "MAIN" else ":DEL"
-        self.write(":TIM:MODE {}", mode)
-        self.write(":TIM:FORM {}", format)
-        self.write(":TIM{}:OFFS {}", tbcmd, offset)
-        self.write(":TIM{}:SCAL {}", tbcmd, scale)
-        
-    def hscale(self, scale=1):
-        """
-        Change horizontal scale
-        """
-        self.write(":TIM:SCAL {}", scale)
-
-    def trigger(self, mode="EDGE", source="CHAN1", level=0, sweep="NORMAL"):
-        """
-        <mode> could be EDGE, PULSe.
-
-        <source> could be the input
-        channel (CHANnel1, CHANnel2), external trigger channel (EXT), AC Line (Mains
-        supply).
-        In EDGE mode, <src> could be CHANnel<n>, EXT, ACLine;
-        In PULSe mode, <src> could be CHANnel<n>, EXT.
-
-        <level> range is: -6*Scale~+6*Scale, Scale indicates the current vertical
-        scale, the unit is V/div.
-
-        <sweep> is AUTO, NORMAL, SINGLE
-        """
-        assert(mode in ["EDGE", "PULS"])
-        self.write(":TRIG:MODE", mode)
-        self.write(":TRIG:{}:SOUR {}", mode, source)
-        self.write(":TRIG:{}:LEV {}", mode, level)
-        self.write(":TRIG:{}:SWE {}", mode, sweep)
-
-    def channel(self, channel=1, display=True, coupling="DC", offset=0, probe=1, scale=1):
-        """
-        Configure <channel>.
-
-        <coupling> can be DC, AC, GND.
-
-        <probe> can be 1, 5, 10, 50, 100, 500 or 1000.
-
-        When the Probe is set to 1X, the range of <scale> is 2mV ~ 10V;
-        When the Probe is set to 5X, the range of <scale> is 10mV ~50V;
-        When the Probe is set to 10X, the range of <scale> is 20mV ~ 100V;
-        When the Probe is set to 50X, the range of <scale> is 100mV ~ 500V;
-        When the Probe is set to 100X, the range of <scale> is 200mV ~ 1000V;
-        When the Probe is set to 500X, the range of <scale> is 1V ~5000V;
-        When the Probe is set to 1000X, the range of <scale> is 2V~ 10000V.
-
-        When Scale≥250mV, the range of <offset>is -40V~+40V;
-        When Scale<250mV, the range of <offset>is -2V~+2V.
-        """
-        assert(channel in [1, 2])
-        self.write(":CHAN{}:DISP {}", on_off(display))
-        self.write(":CHAN{}:COUP {}", coupling)
-        self.write(":CHAN{}:PROB {}", probe)
-        self.write(":CHAN{}:SCAL {}", scale)
-        self.write(":CHAN{}:OFFS {}", offset)
-
-    def measure_total(self, on=True):
-        self.write(":MEAS:TOT {}", on_off(on))
+    measure_total = scope_property_bool(":MEAS:TOT")
 
     def measure_vpp(self, channel=1):
         assert(channel in [1, 2])
@@ -192,8 +173,6 @@ class Scope(Instrument):
         assert(channel in [1, 2])
         return float(self.ask(":MEAS:FREQ?"))
         
-    def get_hscale(self):
-        return float(self.ask(":TIMebase:SCALe?"))
 
 class SignalGenerator(Instrument):
     """Siglent SDG1010"""
