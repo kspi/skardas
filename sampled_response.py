@@ -12,17 +12,16 @@ FIELDS = ['frequency', 'reference', 'response', 'phase', 'db']
 Sample = namedtuple('Sample', FIELDS)
 
 class SampledResponse:
+    INITIAL_SCALE = 2
+
     def __init__(self):
         self.data = blist.sortedlist([], key=lambda x: x.frequency)
         self.scope = instrument.Scope()
         self.generator = instrument.SignalGenerator()
 
-    def adjust_time_scale(frequency):
-        scale = self.scope.timebase_scale * 6 # seconds/screen
-        freq_top = 1 / scale * 0.5
-        freq_bottom = freq_top * 1e-3
-        if not (freq_bottm < frequency < freq_top):
-            self.scope.timebase_scale = 1 / freq_top / 6
+    def release_instruments(self):
+        del self.scope
+        del self.generator
 
     def setup_instruments(self):
         self.scope.reset()
@@ -36,7 +35,7 @@ class SampledResponse:
 
         self.scope.chan1_display = True
         self.scope.chan1_offset = 0
-        self.scope.chan1_scale = 3
+        self.scope.chan1_scale = self.INITIAL_SCALE
         self.scope.chan2_display = False
         self.scope.trigger_mode = "EDGE"
         self.scope.trigger_edge_source = "EXT"
@@ -44,11 +43,25 @@ class SampledResponse:
         self.scope.measure_total()
         time.sleep(0.1)
 
+    def adjust_time_scale(self, frequency):
+        scale = self.scope.timebase_scale * 6 # seconds/screen
+        freq_top = 1 / scale * 0.5
+        freq_bottom = freq_top * 1e-3
+        if not (freq_bottm < frequency < freq_top):
+            self.scope.timebase_scale = 1 / freq_top / 6
 
-    def release_instruments(self):
-        del self.scope
-        del self.generator
-
+    def response_rms(self):
+        vpp = self.scope.measure_vpp(channel=1)
+        set_scale = False
+        while r > 1e6: # an abnormally large value means out of bounds
+            self.scope.chan1_scale *= 2
+            set_scale = True
+            time.sleep(0.1)
+            vpp = self.scope.measure_vpp(channel=1)
+        vrms = self.scope.measure_vrms(channel=1)
+        if set_scale:
+            self.scope.chan1_scale = self.INITIAL_SCALE
+        return vrms
 
     def sample(self, frequency):
         self.generator.signal(channel=1, frequency=frequency, amplitude=1)
@@ -60,7 +73,7 @@ class SampledResponse:
         time.sleep(0.1)
 
         reference = math.sqrt(2) / 2 #Vrms
-        response = self.scope.measure_vrms(channel=1)
+        response = self.response_rms()
 
         ### TODO: phase calculation and display
         #data = numpy.fromarray(self.scope.capture(channel=1), 'B')
