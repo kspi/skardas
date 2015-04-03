@@ -17,23 +17,32 @@ class SampledResponse:
         self.scope = instrument.Scope()
         self.generator = instrument.SignalGenerator()
 
+    def adjust_time_scale(frequency):
+        scale = self.scope.timebase_scale * 6 # seconds/screen
+        freq_top = 1 / scale * 0.5
+        freq_bottom = freq_top * 1e-3
+        if not (freq_bottm < frequency < freq_top):
+            self.scope.timebase_scale = 1 / freq_top / 6
+
     def setup_instruments(self):
         self.scope.reset()
         self.generator.reset()
         time.sleep(0.5)
 
-        self.generator.signal(channel=1, frequency=100, amplitude=3)
-        time.sleep(0.5)
         self.generator.channel(channel=1, on=True)
-        time.sleep(0.5)
+        time.sleep(0.2)
         self.generator.sync(channel=1)
-        time.sleep(0.5)
+        time.sleep(0.2)
 
-        self.scope.auto()
-        time.sleep(6)
-
-        self.scope.trigger(source='EXT', level=0.1)
+        self.scope.chan1_display = True
+        self.scope.chan1_offset = 0
+        self.scope.chan1_scale = 3
+        self.scope.chan2_display = False
+        self.scope.trigger_mode = "EDGE"
+        self.scope.trigger_edge_source = "EXT"
+        self.scope.trigger_level = 0.1
         self.scope.measure_total()
+        time.sleep(0.1)
 
 
     def release_instruments(self):
@@ -45,16 +54,13 @@ class SampledResponse:
         self.generator.signal(channel=1, frequency=frequency, amplitude=1)
         time.sleep(0.5)
 
-        reference = 2 #Vpp
-        hscale='%2.8f' % ((frequency*2)**-1)
-        self.scope.hscale(scale=hscale)
-        time.sleep(0.5) #TODO: increase processing time at low frequencies  
-        #~ rscale=self.scope.get_hscale()   #debug
-        #~ print(hscale, rscale)            #debug
-        #~ time.sleep(0.5)                  #debug
+        self.adjust_scale(frequency)
+        time.sleep(0.5) # TODO: increase processing time at low frequencies
         self.scope.force_trigger()
-        time.sleep(0.5)
-        response = self.scope.measure_vpp(channel=1)
+        time.sleep(0.1)
+
+        reference = math.sqrt(2) / 2 #Vrms
+        response = self.scope.measure_vrms(channel=1)
 
         ### TODO: phase calculation and display
         #data = numpy.fromarray(self.scope.capture(channel=1), 'B')
