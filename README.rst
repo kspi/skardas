@@ -30,10 +30,18 @@ external trigger input. Then you can run the analysis with::
 Contributing
 ------------
 
-Suggestions and patches are welcome. Before submitting patches, check that the
-code passes the tests and flake8_'s checks. The tests can be executed using::
+Suggestions and patches are welcome. The package can be installed in
+development mode with::
+
+    pip install --user -e .
+
+Before submitting patches, check that the code passes the tests and flake8_'s
+checks. The tests can be executed using::
 
     ./setup.py test
+
+The *master* branch is tested with actual instruments, while *devel* contains
+untested development.
 
 This project is free software, licensed under LGPLv2.1 or (at your
 option) any later version.
