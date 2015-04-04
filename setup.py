@@ -35,7 +35,7 @@ setup(
     author="Kiprianas Spiridonovas",
     author_email="k.spiridonovas@gmail.com",
     url="https://github.com/kspi/skardas",
-    license="GPL3",
+    license="LGPLv2.1 or later",
     packages=['skardas'],
     scripts=["bin/skardas"],
 

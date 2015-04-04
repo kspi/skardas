@@ -35,6 +35,9 @@ code passes the tests and flake8_'s checks. The tests can be executed using::
 
     ./setup.py test
 
+This project is free software, licensed under LGPLv2.1 or (at your
+option) any later version.
+
 .. _flake8: https://pypi.python.org/pypi/flake8
 
 
