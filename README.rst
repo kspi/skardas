@@ -52,8 +52,6 @@ option) any later version.
 TODO
 ----
 
-- Test recent changes (new API, adaptive scales, responsive UI).
-
 - Multiple plot interface.
 
   * Phase measurement.
