@@ -22,6 +22,7 @@ class SampledResponse:
         self.generator = instrument.SignalGenerator()
 
     def release_instruments(self):
+        # TODO: actually release the devices
         del self.scope
         del self.generator
 
@@ -36,19 +37,19 @@ class SampledResponse:
         yield 0.2
 
         self.scope.chan2_display = False
-        yield 0.1
+        yield 0.05
         self.scope.chan1_display = True
-        yield 0.1
+        yield 0.05
         self.scope.chan1_offset = 0
-        yield 0.1
+        yield 0.05
         self.scope.chan1_scale = self.INITIAL_SCALE
-        yield 0.1
+        yield 0.05
         self.scope.trigger_mode = "EDGE"
-        yield 0.1
+        yield 0.05
         self.scope.trigger_edge_source = "EXT"
-        yield 0.1
+        yield 0.05
         self.scope.trigger_edge_level = 0.1
-        yield 0.1
+        yield 0.05
         self.scope.measure_total = True
         yield 0.5
 
