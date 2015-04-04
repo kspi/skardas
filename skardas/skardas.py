@@ -17,8 +17,8 @@ class ResponsePlot(tkplot.TkPlot):
         self.plot.set_xlabel("Frequency (Hz)")
         self.plot.set_ylabel("Response (dB)")
         self.plot.set_xlim(*self.freqlim)
-        self.plot.yaxis.set_ticks([-20, -12, -9, -6, -3, -1, 0])
-        self.plot.set_ylim(-24, 0.5)
+        self.plot.yaxis.set_ticks([-20, -12, -9, -6, -3, -1, 0, 1, 3, 6])
+        self.plot.set_ylim(-24, 8)
         self.line, = self.plot.plot(self.response.frequencies(), self.response.dbs(), marker='.')
         self.figure.tight_layout()
 
@@ -34,7 +34,10 @@ def execute_delayed(root, generator):
 
     See 'slowmotion' in http://effbot.org/zone/tkinter-generator-polyline.htm
     """
-    root.after(generator.next() * 1000, execute_delayed, generator)
+    try:
+        root.after(int(next(generator) * 1000), execute_delayed, root, generator)
+    except StopIteration:
+        pass
 
 
 class Skardas:
@@ -69,6 +72,7 @@ class Skardas:
         self.label.config(text="Sampling complete.")
 
     def sample(self):
+        yield from self.response.setup_instruments()
         for frequency in frequency_bisection_sequence(self.start_freq, self.end_freq, depth=7):
             self.label.config(text="Sampling response at {} Hz".format(frequency))
             yield from self.response.sample(frequency)

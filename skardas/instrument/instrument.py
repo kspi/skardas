@@ -28,5 +28,6 @@ class Instrument:
 
     def ask(self, cmd, *args, **kwargs):
         line = cmd.format(*args, **kwargs)
-        logger.debug("{}: {}".format(self.__class__.__name__, line))
-        return self.instrument.ask(line)
+        ret = self.instrument.ask(line)
+        logger.debug("{}: {} => {}".format(self.__class__.__name__, line, ret))
+        return ret

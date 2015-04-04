@@ -14,7 +14,7 @@ Sample = namedtuple('Sample', FIELDS)
 
 
 class SampledResponse:
-    INITIAL_SCALE = 2
+    INITIAL_SCALE = 0.5
 
     def __init__(self):
         self.data = blist.sortedlist([], key=lambda x: x.frequency)
@@ -28,29 +28,39 @@ class SampledResponse:
     def setup_instruments(self):
         self.scope.reset()
         self.generator.reset()
-        yield 0.5
+        yield 0.2
 
         self.generator.channel(channel=1, on=True)
         yield 0.2
         self.generator.sync(channel=1)
         yield 0.2
 
-        self.scope.chan1_display = True
-        self.scope.chan1_offset = 0
-        self.scope.chan1_scale = self.INITIAL_SCALE
         self.scope.chan2_display = False
-        self.scope.trigger_mode = "EDGE"
-        self.scope.trigger_edge_source = "EXT"
-        self.scope.trigger_level = 0.1
-        self.scope.measure_total()
         yield 0.1
+        self.scope.chan1_display = True
+        yield 0.1
+        self.scope.chan1_offset = 0
+        yield 0.1
+        self.scope.chan1_scale = self.INITIAL_SCALE
+        yield 0.1
+        self.scope.trigger_mode = "EDGE"
+        yield 0.1
+        self.scope.trigger_edge_source = "EXT"
+        yield 0.1
+        self.scope.trigger_edge_level = 0.1
+        yield 0.1
+        self.scope.measure_total = True
+        yield 0.5
 
     def adjust_time_scale(self, frequency):
-        scale = self.scope.timebase_scale * 6  # seconds/screen
-        freq_top = 1 / scale * 0.5
-        freq_bottom = freq_top * 1e-3
-        if not (freq_bottom < frequency < freq_top):
-            self.scope.timebase_scale = 1 / freq_top / 6
+        period = 1 / frequency
+        scale = self.scope.timebase_scale  # seconds/screen
+        max_scale = period * 2
+        min_scale = period * 0.1
+        if not (min_scale < scale < max_scale):
+            self.scope.timebase_scale = period * 0.2
+            yield 0.2
+        return self.scope.timebase_scale
 
     def response_rms(self):
         vpp = self.scope.measure_vpp(channel=1)
@@ -58,7 +68,7 @@ class SampledResponse:
         while vpp > 1e6:  # an abnormally large value means out of bounds
             self.scope.chan1_scale *= 2
             set_scale = True
-            yield 0.1
+            yield 0.5
             vpp = self.scope.measure_vpp(channel=1)
         vrms = self.scope.measure_vrms(channel=1)
         if set_scale:
@@ -67,15 +77,13 @@ class SampledResponse:
 
     def sample(self, frequency):
         self.generator.signal(channel=1, frequency=frequency, amplitude=1)
-        yield 0.5
-
-        yield from self.adjust_time_scale(frequency)
-        yield 0.5  # TODO: increase processing time at low frequencies
-        self.scope.force_trigger()
         yield 0.1
 
+        scale = (yield from self.adjust_time_scale(frequency))
+        yield scale * 100 + 0.1
+
         reference = math.sqrt(2) / 2  # Vrms
-        response = (yield from self.response_rms())
+        response = yield from self.response_rms()
 
         # TODO: phase calculation and display
         # data = numpy.fromarray(self.scope.capture(channel=1), 'B')
@@ -84,7 +92,6 @@ class SampledResponse:
 
         db = decibels(response / reference)
         s = Sample(frequency, reference, response, phase, db)
-        print(s)
         self.data.add(s)
         return s
 

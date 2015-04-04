@@ -19,12 +19,12 @@ def scope_property_enum(command, choices, returned_choices=None, type=str):
     return property(fget, fset, doc=doc)
 
 
-def scope_property_bool(command):
+def scope_property_bool(command, on="ON", off="OFF"):
     def fget(self):
-        return self.ask("{}?", command) == "ON"
+        return self.ask("{}?", command) == on
 
     def fset(self, value):
-        self.write("{} {}", command, "ON" if value else "OFF")
+        self.write("{} {}", command, on if value else off)
 
     doc = """
     The boolean property {command}.
@@ -38,7 +38,7 @@ def scope_property_number(command, units):
         return float(self.ask("{}?", command))
 
     def fset(self, value):
-        self.write("{} {:.12}", command, float(value))
+        self.write("{} {:.10f}", command, float(value))
 
     doc = """
     The numeric {command} property. The value is in {units}.
@@ -66,7 +66,7 @@ class Scope(Instrument):
         self.write(":AUTO")
 
     def force_trigger(self):
-        self.write(":FORCetrig")
+        self.write(":FORC")
 
     def local(self):
         self.write(":KEY:FORCe")
@@ -97,23 +97,23 @@ class Scope(Instrument):
     trigger_edge_coupling = scope_property_enum(":TRIG:EDGE:COUP",
             ["DC", "AC", "HF", "LF"])
 
-    chan1_bwlimit = scope_property_bool("CHAN1:BWL")
-    chan1_display = scope_property_bool("CHAN1:DISP")
-    chan1_invert = scope_property_bool("CHAN1:INV")
-    chan1_filter = scope_property_bool("CHAN1:FILT")
-    chan1_coupling = scope_property_enum("CHAN1:COUP", ["DC", "AC", "GND"])
-    chan1_offset = scope_property_number("CHAN1:OFFS", "V")
-    chan1_scale = scope_property_number("CHAN1:SCAL", "V")
-    chan1_probe = scope_property_enum("CHAN1:PROB", [1, 5, 10, 50, 100, 500, 1000], type=int)
+    chan1_bwlimit = scope_property_bool(":CHAN1:BWL")
+    chan1_display = scope_property_bool(":CHAN1:DISP", on="1", off="0")
+    chan1_invert = scope_property_bool(":CHAN1:INV")
+    chan1_filter = scope_property_bool(":CHAN1:FILT")
+    chan1_coupling = scope_property_enum(":CHAN1:COUP", ["DC", "AC", "GND"])
+    chan1_offset = scope_property_number(":CHAN1:OFFS", "V")
+    chan1_scale = scope_property_number(":CHAN1:SCAL", "V")
+    chan1_probe = scope_property_enum(":CHAN1:PROB", [1, 5, 10, 50, 100, 500, 1000], type=int)
 
-    chan2_bwlimit = scope_property_bool("CHAN2:BWL")
-    chan2_display = scope_property_bool("CHAN2:DISP")
-    chan2_invert = scope_property_bool("CHAN2:INV")
-    chan2_filter = scope_property_bool("CHAN2:FILT")
-    chan2_coupling = scope_property_enum("CHAN2:COUP", ["DC", "AC", "GND"])
-    chan2_offset = scope_property_number("CHAN2:OFFS", "V")
-    chan2_scale = scope_property_number("CHAN2:SCAL", "V")
-    chan2_probe = scope_property_enum("CHAN2:PROB", [1, 5, 10, 50, 100, 500, 1000], type=int)
+    chan2_bwlimit = scope_property_bool(":CHAN2:BWL")
+    chan2_display = scope_property_bool(":CHAN2:DISP", on="1", off="0")
+    chan2_invert = scope_property_bool(":CHAN2:INV")
+    chan2_filter = scope_property_bool(":CHAN2:FILT")
+    chan2_coupling = scope_property_enum(":CHAN2:COUP", ["DC", "AC", "GND"])
+    chan2_offset = scope_property_number(":CHAN2:OFFS", "V")
+    chan2_scale = scope_property_number(":CHAN2:SCAL", "V")
+    chan2_probe = scope_property_enum(":CHAN2:PROB", [1, 5, 10, 50, 100, 500, 1000], type=int)
 
     measure_total = scope_property_bool(":MEAS:TOT")
 
