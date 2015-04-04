@@ -58,8 +58,12 @@ class Skardas:
         self.label.pack(side=tk.RIGHT, fill=tk.BOTH, expand=1)
         self.save_button = tk.Button(self.toolbar, text="Save CSV", command=self.save_button_click)
         self.save_button.pack(side=tk.RIGHT)
-        self.stop_button = tk.Button(self.toolbar, text="Stop", command=self.stop)
+        self.stop_button = tk.Button(self.toolbar, text="Stop", command=self.stop_button_click)
         self.stop_button.pack(side=tk.RIGHT)
+        self.stop_sampling = False
+
+    def set_status(self, status):
+        self.label.config(text=status)
 
     def save_button_click(self):
         f = filedialog.asksaveasfile(title="Save CSV", defaultextension='csv')
@@ -67,16 +71,20 @@ class Skardas:
             with f:
                 self.response.write_csv(f)
 
-    def stop(self):
-        self.response.release_instruments()
-        self.label.config(text="Sampling complete.")
+    def stop_button_click(self):
+        self.stop_sampling = True
 
     def sample(self):
+        self.set_status("Setting up instruments")
         yield from self.response.setup_instruments()
         for frequency in frequency_bisection_sequence(self.start_freq, self.end_freq, depth=7):
-            self.label.config(text="Sampling response at {} Hz".format(frequency))
+            if self.stop_sampling:
+                break
+            self.set_status("Sampling response at {} Hz".format(frequency))
             yield from self.response.sample(frequency)
             self.plot.update()
+        self.response.release_instruments()
+        self.set_status("Sampling complete.")
 
     def start(self):
         execute_delayed(self.root, self.sample())
