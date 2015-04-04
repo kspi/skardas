@@ -2,8 +2,15 @@
 import sys
 from skardas import skardas
 import logging
+import argparse
 
-logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
+parser = argparse.ArgumentParser(description='Measure frequency response of filter.')
+parser.set_defaults(debug=False)
+parser.add_argument('--debug', dest='debug', action='store_true', help='print debug messages')
+parser.add_argument('startfreq', type=float, help='scan start frequency')
+parser.add_argument('endfreq', type=float, help='scan end frequency')
+args = parser.parse_args()
 
-assert(len(sys.argv) == 3)
-skardas.run(float(sys.argv[1]), float(sys.argv[2]))
+logging.basicConfig(stream=sys.stderr, level=logging.DEBUG if args.debug else logging.INFO)
+
+skardas.run(args.startfreq, args.endfreq)
