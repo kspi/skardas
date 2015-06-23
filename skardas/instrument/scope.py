@@ -137,6 +137,10 @@ class Scope(Instrument):
         assert(channel in [1, 2])
         return float(self.ask(":MEAS:VRMS? CHAN{}".format(channel)))
 
+    def measure_vaverage(self, channel=1):
+        assert(channel in [1, 2])
+        return float(self.ask(":MEAS:VAV? CHAN{}".format(channel)))
+
     def measure_frequency(self, channel=1):
         assert(channel in [1, 2])
         return float(self.ask(":MEAS:FREQ? CHAN{}".format(channel)))
