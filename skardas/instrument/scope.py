@@ -119,24 +119,24 @@ class Scope(Instrument):
 
     def measure_vpp(self, channel=1):
         assert(channel in [1, 2])
-        return float(self.ask(":MEAS:VPP?"))
+        return float(self.ask(":MEAS:VPP? CHAN{}".format(channel)))
 
     def measure_vmax(self, channel=1):
         assert(channel in [1, 2])
-        return float(self.ask(":MEAS:VMAX?"))
+        return float(self.ask(":MEAS:VMAX? CHAN{}".format(channel)))
 
     def measure_vmin(self, channel=1):
         assert(channel in [1, 2])
-        return float(self.ask(":MEAS:VMIN?"))
+        return float(self.ask(":MEAS:VMIN? CHAN{}".format(channel)))
 
     def measure_vamplitude(self, channel=1):
         assert(channel in [1, 2])
-        return float(self.ask(":MEAS:VAMP?"))
+        return float(self.ask(":MEAS:VAMP? CHAN{}".format(channel)))
 
     def measure_vrms(self, channel=1):
         assert(channel in [1, 2])
-        return float(self.ask(":MEAS:VRMS?"))
+        return float(self.ask(":MEAS:VRMS? CHAN{}".format(channel)))
 
     def measure_frequency(self, channel=1):
         assert(channel in [1, 2])
-        return float(self.ask(":MEAS:FREQ?"))
+        return float(self.ask(":MEAS:FREQ? CHAN{}".format(channel)))
